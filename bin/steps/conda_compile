@@ -6,7 +6,8 @@ if [ ! -d /app/.heroku/miniconda ]; then
     bash Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh -p /app/.heroku/miniconda/ -b | indent
     rm -fr Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh
 
-    conda update conda --quiet --yes | indent
+    # conda update conda --quiet --yes | indent
+    conda install pip --yes | indent
 fi
 
 
@@ -20,6 +21,11 @@ if [ -f environment.yml ]; then
     # TODO: Use update if its already there
     conda env remove --yes --quiet --name heroku-env
     conda env create --name=heroku-env --file environment.yml
+fi
+
+if [ -f requirements.txt ]; then
+    puts-step "Installing dependencies using Pip"
+    pip install -r requirements.txt  --exists-action=w --allow-all-external | indent
 fi
 
 # Clean up the installation environment .

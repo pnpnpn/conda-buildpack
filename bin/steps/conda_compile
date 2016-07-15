@@ -1,16 +1,26 @@
+#!/usr/bin/env bash
+CONDA_VERSION=4.0.5
 if [ ! -d /app/.heroku/miniconda ]; then
-    puts-step "Preparing Python/Miniconda Environment (3.5.2)"
-    curl -Os http://repo.continuum.io/miniconda/Miniconda-3.7.3-Linux-x86_64.sh
-    bash Miniconda-3.7.3-Linux-x86_64.sh  -p /app/.heroku/miniconda/ -b | indent
-    rm -fr Miniconda-3.7.3-Linux-x86_64.sh
+    puts-step "Preparing Python/Miniconda Environment (${CONDA_VERSION})"
+    curl -Os http://repo.continuum.io/miniconda/Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh
+    bash Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh -p /app/.heroku/miniconda/ -b | indent
+    rm -fr Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh
 
+    # conda update conda --quiet --yes | indent
     conda install pip --yes | indent
 fi
 
 
 if [ -f conda-requirements.txt ]; then
     puts-step "Installing dependencies using Conda"
-    conda install --file conda-requirements.txt --yes | indent
+    conda install --file conda-requirements.txt --yes
+fi
+
+if [ -f environment.yml ]; then
+    puts-step "Creating conda environment"
+    # TODO: Use update if its already there
+    conda env remove --yes --quiet --name heroku-env
+    conda env create --name=heroku-env --file environment.yml
 fi
 
 if [ -f requirements.txt ]; then
@@ -19,4 +29,5 @@ if [ -f requirements.txt ]; then
 fi
 
 # Clean up the installation environment .
+# TODO Determine if removing packages might be bad here
 conda clean -pt --yes > /dev/null
